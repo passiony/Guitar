@@ -3,20 +3,22 @@ using System.Collections;
 
 public class BaseMenu : MonoBehaviour
 {
-	public GUISkin CustomSkin;
-	public GUIStyle TextStyle = new GUIStyle();
+	// public GUISkin CustomSkin;
+	// public GUIStyle TextStyle = new GUIStyle();
 
 	protected bool isVisible = false;
 
 	public void ShowMenu()
 	{
 		isVisible = true;
+		gameObject.SetActive(true);
 		OnShowMenu();
 	}
 
 	public void HideMenu()
 	{
 		isVisible = false;
+		gameObject.SetActive(false);
 		OnHideMenu();
 	}
 
@@ -32,8 +34,7 @@ public class BaseMenu : MonoBehaviour
 
 	protected void DrawBackground()
 	{
-		Texture2D Background = (Texture2D)UnityEngine.Resources.Load( "BlackTransparent" );
-
-		GUI.DrawTexture( new Rect( 0, 0, Screen.width, Screen.height ), Background, ScaleMode.StretchToFill, true );
+		// Texture2D Background = (Texture2D)UnityEngine.Resources.Load( "BlackTransparent" );
+		// GUI.DrawTexture( new Rect( 0, 0, Screen.width, Screen.height ), Background, ScaleMode.StretchToFill, true );
 	}
 }

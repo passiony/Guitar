@@ -3,163 +3,165 @@ using System.Collections;
 
 public class KeyboardControl : MonoBehaviour
 {
-	//This constant is only used in this class and cannot be adjusted to work with more or less strings
-	//This feature is planned for the future
-	const int NumStrings = 5;
+    //This constant is only used in this class and cannot be adjusted to work with more or less strings
+    //This feature is planned for the future
+    const int NumStrings = 5;
 
-	//The five button objects in the scene
-	protected GameObject[] StringButtons;
+    //The five button objects in the scene
+    protected GameObject[] StringButtons;
 
-	//Stores if the button is held down
-	protected bool[] ButtonsPressed;
+    //Stores if the button is held down
+    protected bool[] ButtonsPressed;
 
-	//Stores if the button was just pressed in this frame
-	protected bool[] ButtonsJustPressed;
+    //Stores if the button was just pressed in this frame
+    protected bool[] ButtonsJustPressed;
 
-	//KeyCodes that control the five string buttons
-	protected KeyCode[] StringKeys;
+    //KeyCodes that control the five string buttons
+    protected KeyCode[] StringKeys;
 
-	//Use this for initialization
-	void Start()
-	{
-		ButtonsPressed = new bool[ NumStrings ];
-		ButtonsJustPressed = new bool[ NumStrings ];
+    //Use this for initialization
+    void Start()
+    {
+        ButtonsPressed = new bool[NumStrings];
+        ButtonsJustPressed = new bool[NumStrings];
 
-		for( int i = 0; i < NumStrings; ++i )
-		{
-			ButtonsPressed[ i ] = false;
-			ButtonsJustPressed[ i ] = false;
-		}
+        for (int i = 0; i < NumStrings; ++i)
+        {
+            ButtonsPressed[i] = false;
+            ButtonsJustPressed[i] = false;
+        }
 
-		UpdateStringKeyArray();
-		SaveReferencesToStringButtons();
-	}
+        UpdateStringKeyArray();
+        SaveReferencesToStringButtons();
+    }
 
-	protected void UpdateStringKeyArray()
-	{
-		StringKeys = new KeyCode[ NumStrings ];
+    protected void UpdateStringKeyArray()
+    {
+        StringKeys = new KeyCode[NumStrings];
 
-		for( int i = 0; i < NumStrings; ++i )
-		{
-			StringKeys[ i ] = GameObject.Find( "StringButton" + ( i + 1 ) ).GetComponent<StringButton>().Key;
-		}
-	}
+        for (int i = 0; i < NumStrings; ++i)
+        {
+            StringKeys[i] = GameObject.Find("StringButton" + (i + 1)).GetComponent<StringButton>().Key;
+        }
+    }
 
-	void SaveReferencesToStringButtons()
-	{
-		StringButtons = new GameObject[ NumStrings ];
+    void SaveReferencesToStringButtons()
+    {
+        StringButtons = new GameObject[NumStrings];
 
-		for( int i = 0; i < NumStrings; ++i )
-		{
-			StringButtons[ i ] = GameObject.Find( "StringButton" + ( i + 1 ) );
-		}
-	}
+        for (int i = 0; i < NumStrings; ++i)
+        {
+            StringButtons[i] = GameObject.Find("StringButton" + (i + 1));
+        }
+    }
 
-	//Update is called once per frame
-	void Update()
-	{
-		ProcessKeyInput();
-	}
+    //Update is called once per frame
+    void Update()
+    {
+        ProcessKeyInput();
+    }
 
-	void ProcessKeyInput()
-	{
-		ResetButtonsJustPressedArray();
+    void ProcessKeyInput()
+    {
+        ResetButtonsJustPressedArray();
 
-		for( int i = 0; i < NumStrings; ++i )
-		{
-			CheckKeyCode( StringKeys[ i ], i );
-		}
-	}
+        for (int i = 0; i < NumStrings; ++i)
+        {
+            CheckKeyCode(StringKeys[i], i);
+        }
+    }
 
-	void CheckKeyCode( KeyCode code, int stringIndex )
-	{
-		if( Input.GetKeyDown( code ) )
-		{
-			OnStringChange( stringIndex, true );
-		}
-		if( Input.GetKeyUp( code ) )
-		{
-			OnStringChange( stringIndex, false );
-		}
-		if( Input.GetKey( code ) && !ButtonsPressed[ stringIndex ] )
-		{
-			OnStringChange( stringIndex, true );
-		}
-	}
+    void CheckKeyCode(KeyCode code, int stringIndex)
+    {
+        if (Input.GetKeyDown(code))
+        {
+            OnStringChange(stringIndex, true);
+        }
 
-	protected void ResetButtonsJustPressedArray()
-	{
-		for( int i = 0; i < NumStrings; ++i )
-		{
-			ButtonsJustPressed[ i ] = false;
-		}
-	}
+        if (Input.GetKeyUp(code))
+        {
+            OnStringChange(stringIndex, false);
+        }
 
-	protected int GetNumButtonsPressed()
-	{
-		int pressed = 0;
+        if (Input.GetKey(code) && !ButtonsPressed[stringIndex])
+        {
+            OnStringChange(stringIndex, true);
+        }
+    }
 
-		for( int i = 0; i < NumStrings; ++i )
-		{
-			if( ButtonsPressed[ i ] )
-			{
-				pressed++;
-			}
-		}
+    protected void ResetButtonsJustPressedArray()
+    {
+        for (int i = 0; i < NumStrings; ++i)
+        {
+            ButtonsJustPressed[i] = false;
+        }
+    }
 
-		return pressed;
-	}
+    protected int GetNumButtonsPressed()
+    {
+        int pressed = 0;
 
-	public GameObject GetStringButton( int index )
-	{
-		return StringButtons[ index ];
-	}
+        for (int i = 0; i < NumStrings; ++i)
+        {
+            if (ButtonsPressed[i])
+            {
+                pressed++;
+            }
+        }
 
-	public bool IsButtonPressed( int index )
-	{
-		return ButtonsPressed[ index ];
-	}
+        return pressed;
+    }
 
-	public bool WasButtonJustPressed( int index )
-	{
-		return ButtonsJustPressed[ index ];
-	}
+    public GameObject GetStringButton(int index)
+    {
+        return StringButtons[index];
+    }
 
-	void OnStringChange( int stringIndex, bool pressed )
-	{
-		Vector3 stringButtonPosition = StringButtons[ stringIndex ].transform.Find( "Paddle" ).transform.position;
-		
-		if( pressed )
-		{
-			//Only press this if less then two buttons are already pressed
-			//The keyboard limits multiple key presses arbitrarily, sometimes its 2, sometimes 3
-			//So I locked it to a maximum of two key presses at the same time for consistency
-			if( GetNumButtonsPressed() < 2 )
-			{
-				//Move the paddle upwards
-				stringButtonPosition.y = 0.16f;
+    public bool IsButtonPressed(int index)
+    {
+        return ButtonsPressed[index];
+    }
 
-				//Enable the light
-				StringButtons[ stringIndex ].transform.Find( "Light" ).GetComponent<Light>().enabled = true;
+    public bool WasButtonJustPressed(int index)
+    {
+        return ButtonsJustPressed[index];
+    }
 
-				//Update key state
-				ButtonsPressed[ stringIndex ] = true;
-				ButtonsJustPressed[ stringIndex ] = true;
-			}
-		}
-		else
-		{
-			//Move paddle down
-			stringButtonPosition.y = -0.06f;
+    void OnStringChange(int stringIndex, bool pressed)
+    {
+        Vector3 stringButtonPosition = StringButtons[stringIndex].transform.Find("Paddle").transform.position;
 
-			//Disable light
-			StringButtons[ stringIndex ].transform.Find( "Light" ).GetComponent<Light>().enabled = false;
+        if (pressed)
+        {
+            //Only press this if less then two buttons are already pressed
+            //The keyboard limits multiple key presses arbitrarily, sometimes its 2, sometimes 3
+            //So I locked it to a maximum of two key presses at the same time for consistency
+            if (GetNumButtonsPressed() < 2)
+            {
+                //Move the paddle upwards
+                stringButtonPosition.y = 0.16f;
 
-			//Update key state
-			ButtonsPressed[ stringIndex ] = false;
-		}
+                //Enable the light
+                StringButtons[stringIndex].transform.Find("Light").GetComponent<Light>().enabled = true;
 
-		//Set paddle position
-		StringButtons[ stringIndex ].transform.Find( "Paddle" ).transform.position = stringButtonPosition;
-	}
+                //Update key state
+                ButtonsPressed[stringIndex] = true;
+                ButtonsJustPressed[stringIndex] = true;
+            }
+        }
+        else
+        {
+            //Move paddle down
+            stringButtonPosition.y = -0.06f;
+
+            //Disable light
+            StringButtons[stringIndex].transform.Find("Light").GetComponent<Light>().enabled = false;
+
+            //Update key state
+            ButtonsPressed[stringIndex] = false;
+        }
+
+        //Set paddle position
+        StringButtons[stringIndex].transform.Find("Paddle").transform.position = stringButtonPosition;
+    }
 }
