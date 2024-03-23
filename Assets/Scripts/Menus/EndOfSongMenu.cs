@@ -68,7 +68,7 @@ public class EndOfSongMenu : BaseMenu
 	void OnBackToMainMenu()
 	{
 		HideMenu();
-		GetComponent<GuitarGameplay>().StopPlaying();
-		GetComponent<MainMenu>().ShowMenu();
+		GuitarGameplay.Instance.StopPlaying();
+		UIManager.Instance.ShowMainMenu();
 	}
 }

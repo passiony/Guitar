@@ -19,15 +19,18 @@ public class UIManager : MonoBehaviour
     public void ShowIngameMenu()
     {
         inGameMenu.SetActive(true);
+        inGameMenu.GetComponent<InGameMenu>().ShowMenu();
     }
 
     public void ShowMainMenu()
     {
         mainMenu.SetActive(true);
+        mainMenu.GetComponent<MainMenu>().ShowMenu();
     }
 
     public void ShowEndOfSong()
     {
         endOfSongMenu.SetActive(true);
+        endOfSongMenu.GetComponent<EndOfSongMenu>().ShowMenu();
     }
 }

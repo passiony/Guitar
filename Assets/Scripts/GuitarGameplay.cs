@@ -1,9 +1,6 @@
-using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-using UnityEngine.UI;
 
 public class GuitarGameplay : MonoBehaviour
 {
@@ -16,7 +13,7 @@ public class GuitarGameplay : MonoBehaviour
     protected GameObject GuitarNeckObject;
     protected KeyboardControl KeyboardControl;
     protected SongPlayer Player;
-    
+
     protected List<GameObject> NoteObjects;
     protected Color[] Colors;
 
@@ -29,6 +26,7 @@ public class GuitarGameplay : MonoBehaviour
     protected float NumNotesMissed = 0;
 
     protected bool[] HasHitNoteOnStringIndexThisFrame;
+    private static readonly int MainTex = Shader.PropertyToID("_MainTex");
 
     private void Awake()
     {
@@ -85,8 +83,8 @@ public class GuitarGameplay : MonoBehaviour
             {
                 Colors[i] = color;
 
-                stringButton.transform.Find("Paddle").GetComponent<Renderer>().sharedMaterial.color = color;
-                stringButton.transform.Find("Socket").GetComponent<Renderer>().sharedMaterial.color = color;
+                stringButton.transform.Find("Paddle").GetComponent<Renderer>().material.color = color;
+                stringButton.transform.Find("Socket").GetComponent<Renderer>().material.color = color;
                 stringButton.transform.Find("Light").GetComponent<Light>().color = color;
             }
         }
@@ -140,7 +138,7 @@ public class GuitarGameplay : MonoBehaviour
 
             //Hide object on start, they will be shown - when appropriate - in the UpdateNotes routine
             note.GetComponent<Renderer>().enabled = false;
-            note.active = false;
+            note.SetActive(false);
 
             NoteObjects.Add(note);
         }
@@ -164,29 +162,23 @@ public class GuitarGameplay : MonoBehaviour
     protected IEnumerator DisplayCountdown()
     {
         //Count down from 4 to 1 and GO at the beginning of a song
-
-        yield return new WaitForSeconds(MyMath.BeatsToSeconds(0.5f, Player.Song.BeatsPerMinute));
-
-        StartCoroutine(DisplayText("4", 1f, 0f));
         yield return new WaitForSeconds(MyMath.BeatsToSeconds(1f, Player.Song.BeatsPerMinute));
+        gamePanel.ShowTimer("3");
 
-        StartCoroutine(DisplayText("3", 1f, 0f));
         yield return new WaitForSeconds(MyMath.BeatsToSeconds(1f, Player.Song.BeatsPerMinute));
+        gamePanel.ShowTimer("2");
 
-        StartCoroutine(DisplayText("2", 1f, 0f));
         yield return new WaitForSeconds(MyMath.BeatsToSeconds(1f, Player.Song.BeatsPerMinute));
+        gamePanel.ShowTimer("1");
 
-        StartCoroutine(DisplayText("1", 1f, 0f));
         yield return new WaitForSeconds(MyMath.BeatsToSeconds(1f, Player.Song.BeatsPerMinute));
-
-        StartCoroutine(DisplayText("Go", MyMath.BeatsToSeconds(1.5f, Player.Song.BeatsPerMinute),
-            MyMath.BeatsToSeconds(1f, Player.Song.BeatsPerMinute)));
+        gamePanel.ShowTimer("Go");
     }
 
     protected void StopCountdown()
     {
         StopCoroutine("DisplayCountdown");
-        GameObject.Find("GUI Text").GetComponent<TextMeshProUGUI>().text = "";
+        gamePanel.ShowTimer("");
     }
 
     protected void ResetHasHitNoteOnStringIndexArray()
@@ -291,8 +283,8 @@ public class GuitarGameplay : MonoBehaviour
         Vector3 trailPosition = trail.transform.localPosition;
 
         //Do this as long as the button for the specific string is pressed or until the trail reaches its end
-        while (KeyboardControl.IsButtonPressed(note.StringIndex)
-               && Player.GetCurrentBeat() + 1 <= note.Time + note.Length)
+        while (KeyboardControl.IsButtonPressed(note.StringIndex) &&
+               Player.GetCurrentBeat() + 1 <= note.Time + note.Length)
         {
             //Calculate how far we have progressed in this trail
             float progress = Mathf.Clamp01((1 + Player.GetCurrentBeat() - note.Time) / note.Length);
@@ -355,6 +347,7 @@ public class GuitarGameplay : MonoBehaviour
         {
             //Set this flag so no two notes are hit with the same button press
             HasHitNoteOnStringIndexThisFrame[note.StringIndex] = true;
+            gamePanel.ShowComboEffect(NoteObjects[index].transform.position.z);
             return true;
         }
 
@@ -398,10 +391,10 @@ public class GuitarGameplay : MonoBehaviour
         if (note.Time < Player.GetCurrentBeat() + 6)
         {
             //If the note is not active, it is visible on the neck for the first time
-            if (!NoteObjects[index].active)
+            if (!NoteObjects[index].activeSelf)
             {
                 //Activate and show the note
-                NoteObjects[index].active = true;
+                NoteObjects[index].SetActive(true);
                 NoteObjects[index].GetComponent<Renderer>().enabled = true;
 
                 //If there is a trail, show that aswell
@@ -423,7 +416,7 @@ public class GuitarGameplay : MonoBehaviour
 
     protected void UpdateGuiScore()
     {
-        gamePanel.scoreText.text = Mathf.Floor(Score).ToString();
+        gamePanel.ShowScore((int)Mathf.Floor(Score));
     }
 
     protected void UpdateGuiMultiplier()
@@ -432,19 +425,19 @@ public class GuitarGameplay : MonoBehaviour
 
         Multiplier = Mathf.Clamp(Multiplier, 1, 10);
 
-        gamePanel.multiplierText.text = "x" + Mathf.Floor(Multiplier).ToString();
+        gamePanel.ShowMultiplier((int)Mathf.Floor(Multiplier));
     }
 
     protected void UpdateNeckTextureOffset()
     {
         //Get the current offset
-        Vector2 offset = GuitarNeckObject.GetComponent<Renderer>().material.GetTextureOffset("_MainTex");
+        Vector2 offset = GuitarNeckObject.GetComponent<Renderer>().material.GetTextureOffset(MainTex);
 
         //Update its y component
         offset.y = 1 - (Player.GetCurrentBeat() - 0.5f) / 6f;
 
         //And set it again
-        GuitarNeckObject.GetComponent<Renderer>().material.SetTextureOffset("_MainTex", offset);
+        GuitarNeckObject.GetComponent<Renderer>().material.SetTextureOffset(MainTex, offset);
     }
 
     protected float GetNeckMoveOffset()
@@ -454,8 +447,7 @@ public class GuitarGameplay : MonoBehaviour
 
     protected bool IsInHitZone(GameObject note)
     {
-        return note.transform.position.z < GetHitZoneBeginning()
-               && note.transform.position.z > GetHitZoneEnd();
+        return note.transform.position.z < GetHitZoneBeginning() && note.transform.position.z > GetHitZoneEnd();
     }
 
     protected float GetGuitarNeckLength()
@@ -566,41 +558,5 @@ public class GuitarGameplay : MonoBehaviour
 
         UIManager.Instance.ShowEndOfSong();
         // GetComponent<EndOfSongMenu>().ShowMenu();
-    }
-
-    protected IEnumerator DisplayText(string text, float duration, float fade = 0f)
-    {
-        //Display a Text in the center of the screen for 'duration' seconds
-
-        gamePanel.text.text = text;
-
-        //Make text visible
-        Color newColor = gamePanel.text.material.color;
-        newColor.a = 1;
-        gamePanel.text.material.color = newColor;
-
-        //Wait for duration - fade
-        yield return new WaitForSeconds(MyMath.BeatsToSeconds(duration - fade, Player.Song.BeatsPerMinute));
-
-        //Fade out text
-        float fadeTime = MyMath.BeatsToSeconds(fade, Player.Song.BeatsPerMinute);
-        float totalFadeTime = fadeTime;
-
-        while (fadeTime > 0 && gamePanel.text.text == text)
-        {
-            newColor = gamePanel.text.material.color;
-            newColor.a = fadeTime / totalFadeTime;
-            gamePanel.text.material.color = newColor;
-
-            fadeTime -= Time.deltaTime;
-
-            yield return null;
-        }
-
-        //If no other DisplayText() Coroutine has changed the text, hide it
-        if (gamePanel.text.text == text)
-        {
-            gamePanel.text.text = "";
-        }
     }
 }

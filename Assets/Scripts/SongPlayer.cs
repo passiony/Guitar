@@ -4,17 +4,20 @@ using System.Collections;
 
 public class SongPlayer : MonoBehaviour
 {
-    [HideInInspector] public SongData Song;
-
+    public SongData Song;
     private AudioSource m_AudioSource;
     protected float SmoothAudioTime = 0f;
     protected bool AudioStopEventFired = false;
     protected bool WasPlaying = false;
     protected bool IsSongPlaying = false;
 
-    private void Awake()
+    AudioSource Audio
     {
-        m_AudioSource = GetComponent<AudioSource>();
+        get
+        {
+            if (!m_AudioSource) m_AudioSource = GetComponent<AudioSource>();
+            return m_AudioSource;
+        }
     }
 
     void Update()
@@ -37,7 +40,7 @@ public class SongPlayer : MonoBehaviour
         //I want to check if the song has finished playing automatically.
         //Sometimes this is triggered when the song is at the end, 
         //and sometimes it has already been reset to the beginning of the song.
-        if (m_AudioSource.time == m_AudioSource.clip.length || (WasPlaying && m_AudioSource.time == 0))
+        if (Audio.time == Audio.clip.length || (WasPlaying && Audio.time == 0))
         {
             IsSongPlaying = false;
             GetComponent<GuitarGameplay>().OnSongFinished();
@@ -50,9 +53,9 @@ public class SongPlayer : MonoBehaviour
         //as smoothly. This uses Time.deltaTime to progress the audio time
         SmoothAudioTime += Time.deltaTime;
 
-        if (SmoothAudioTime >= m_AudioSource.clip.length)
+        if (SmoothAudioTime >= Audio.clip.length)
         {
-            SmoothAudioTime = m_AudioSource.clip.length;
+            SmoothAudioTime = Audio.clip.length;
             OnSongStopped();
         }
 
@@ -73,12 +76,12 @@ public class SongPlayer : MonoBehaviour
         }
 
         //Check if my smooth time and the actual audio time are of by 0.1
-        return Mathf.Abs(SmoothAudioTime - m_AudioSource.time) > 0.1f;
+        return Mathf.Abs(SmoothAudioTime - Audio.time) > 0.1f;
     }
 
     protected void CorrectSmoothAudioTime()
     {
-        SmoothAudioTime = m_AudioSource.time;
+        SmoothAudioTime = Audio.time;
     }
 
     public void Play()
@@ -91,8 +94,8 @@ public class SongPlayer : MonoBehaviour
         }
         else
         {
-            m_AudioSource.Play();
-            SmoothAudioTime = m_AudioSource.time;
+            Audio.Play();
+            SmoothAudioTime = Audio.time;
         }
     }
 
@@ -100,18 +103,18 @@ public class SongPlayer : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
 
-        m_AudioSource.Play();
+        Audio.Play();
     }
 
     public void Pause()
     {
         IsSongPlaying = false;
-        m_AudioSource.Pause();
+        Audio.Pause();
     }
 
     public void Stop()
     {
-        m_AudioSource.Stop();
+        Audio.Stop();
         WasPlaying = false;
         IsSongPlaying = false;
     }
@@ -124,9 +127,9 @@ public class SongPlayer : MonoBehaviour
     public void SetSong(SongData song)
     {
         Song = song;
-        m_AudioSource.time = 0;
-        m_AudioSource.clip = Song.BackgroundTrack;
-        m_AudioSource.pitch = 1;
+        Audio.time = 0;
+        Audio.clip = Song.BackgroundTrack;
+        Audio.pitch = 1;
 
         SmoothAudioTime = MyMath.BeatsToSeconds(-Song.AudioStartBeatOffset, Song.BeatsPerMinute);
     }
@@ -135,7 +138,7 @@ public class SongPlayer : MonoBehaviour
     {
         if (songDataEditor)
         {
-            SmoothAudioTime = m_AudioSource.time;
+            SmoothAudioTime = Audio.time;
         }
 
         return MyMath.SecondsToBeats(SmoothAudioTime, Song.BeatsPerMinute) - Song.AudioStartBeatOffset;

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 458913dcbbcd4964c8106331a3e4b85b, type: 3}
   m_Name: Everything Begins
   m_EditorClassIdentifier: 
-  Name: Everything Begins
-  Band: Free Royalty Free Music by DanoSongs.com
+  Name: Song
+  Band: Free Royalt
   BeatsPerMinute: 89
   AudioStartBeatOffset: 4.3
   BackgroundTrack: {fileID: 8300000, guid: f6135d7d310b3e544b0c59e31390c94d, type: 3}
@@ -30,14 +30,23 @@ MonoBehaviour:
   - Time: -1.5
     StringIndex: 4
     Length: 0
+  - Time: -1.5
+    StringIndex: 0
+    Length: 0
   - Time: -1
     StringIndex: 0
+    Length: 0
+  - Time: -0.75
+    StringIndex: 4
     Length: 0
   - Time: -0.5
     StringIndex: 1
     Length: 0
   - Time: 0
     StringIndex: 3
+    Length: 0
+  - Time: 0.25
+    StringIndex: 4
     Length: 0
   - Time: 0.5
     StringIndex: 4
